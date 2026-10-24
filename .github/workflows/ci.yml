@@ -1,6 +1,5 @@
 name: CI
 
-# ¿Cuándo se ejecuta? En cada push y en cada pull request hacia main
 on:
   push:
     branches: [ main ]
@@ -9,7 +8,7 @@ on:
 
 jobs:
   pruebas:
-    runs-on: ubuntu-24.04        # GitHub presta una máquina Linux (runner)
+    runs-on: ubuntu-24.04
     steps:
       - name: Descargar el código
         uses: actions/checkout@v5
@@ -24,3 +23,28 @@ jobs:
 
       - name: Correr pruebas
         run: pytest -v
+
+  imagen:
+    needs: pruebas                 # solo corre si las pruebas pasaron
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write              # permiso para publicar en GHCR
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v5
+
+      - name: Construir la imagen
+        run: docker build -t ghcr.io/${{ github.repository }}:${{ github.sha }} .
+
+      - name: Iniciar sesión en GHCR
+        if: github.event_name == 'push'      # solo al llegar a main
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publicar la imagen
+        if: github.event_name == 'push'
+        run: docker push ghcr.io/${{ github.repository }}:${{ github.sha }}
