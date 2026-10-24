@@ -1,0 +1,26 @@
+name: CI
+
+# ¿Cuándo se ejecuta? En cada push y en cada pull request hacia main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest        # GitHub presta una máquina Linux (runner)
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Correr pruebas
+        run: pytest -v
