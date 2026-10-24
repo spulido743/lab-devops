@@ -10,35 +10,60 @@ jobs:
   pruebas:
     runs-on: ubuntu-24.04
     steps:
-      - name: Descargar el código
-        uses: actions/checkout@v5
-
-      - name: Instalar Python
-        uses: actions/setup-python@v6
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-
       - name: Instalar dependencias
-        run: pip install -r requirements.txt
-
+        run: pip install -r requirements.txt -r requirements-dev.txt
       - name: Correr pruebas
         run: pytest -v
 
+  seguridad:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0              # historial completo para buscar secretos en todos los commits
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: "Secretos: Gitleaks"
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "SAST: Bandit"
+        run: |
+          pip install bandit
+          bandit -r . -x ./test_app.py -ll
+
+      - name: "SCA: pip-audit"
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt -r requirements-dev.txt
+
   imagen:
-    needs: pruebas                 # solo corre si las pruebas pasaron
+    needs: [pruebas, seguridad]       # la imagen solo se construye si pasan pruebas Y seguridad
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      packages: write              # permiso para publicar en GHCR
+      packages: write
     steps:
-      - name: Descargar el código
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
       - name: Construir la imagen
         run: docker build -t ghcr.io/${{ github.repository }}:${{ github.sha }} .
 
+      - name: "Contenedor: Trivy"
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image --exit-code 1 --severity CRITICAL,HIGH --ignore-unfixed \
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+
       - name: Iniciar sesión en GHCR
-        if: github.event_name == 'push'      # solo al llegar a main
+        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
