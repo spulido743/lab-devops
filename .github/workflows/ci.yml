@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Instalar dependencias
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt -r requirements-dev.txt
       - name: Correr pruebas
         run: pytest -v
 
@@ -42,7 +42,7 @@ jobs:
       - name: "SCA: pip-audit"
         run: |
           pip install pip-audit
-          pip-audit -r requirements.txt
+          pip-audit -r requirements.txt -r requirements-dev.txt
 
   imagen:
     needs: [pruebas, seguridad]       # la imagen solo se construye si pasan pruebas Y seguridad
