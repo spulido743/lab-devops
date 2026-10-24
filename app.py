@@ -23,4 +23,6 @@ def sumar(a, b):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+    # Por defecto solo local (seguro). El contenedor define HOST=0.0.0.0
+    host = os.environ.get("HOST", "127.0.0.1")
+    app.run(host=host, port=8000)

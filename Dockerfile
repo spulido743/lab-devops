@@ -12,6 +12,6 @@ COPY app.py .
 
 # No correr como root (buena práctica de seguridad)
 USER 1000
-
+ENV HOST=0.0.0.0
 EXPOSE 8000
 CMD ["python", "app.py"]
