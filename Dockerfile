@@ -13,10 +13,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Luego el código
-COPY app.py .
+COPY app.py config.py ./
 
 # No correr como root (buena práctica de seguridad)
 USER 1000
-ENV HOST=0.0.0.0
 EXPOSE 8000
-CMD ["python", "app.py"]
+# gunicorn: servidor de producción con 2 procesos y log de accesos a stdout
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--access-logfile", "-", "app:app"]
