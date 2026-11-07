@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Bucket S3 para el state de Terraform y los backups del laboratorio lab-devops
+
+Parameters:
+  NombreBucket:
+    Type: String
+    Description: Nombre global unico del bucket
+
+Resources:
+  BucketLab:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Ref NombreBucket
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      Tags:
+        - Key: proyecto
+          Value: lab-devops
+
+Outputs:
+  NombreDelBucket:
+    Description: Bucket para state y backups
+    Value: !Ref BucketLab
