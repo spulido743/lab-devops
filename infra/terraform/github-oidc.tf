@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "confianza_github" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:ref:refs/heads/main"]
+      values   = ["repo:spulido743@118694265/lab-devops@1432491315:ref:refs/heads/main"]
     }
   }
 }

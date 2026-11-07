@@ -65,6 +65,14 @@ jobs:
             aquasec/trivy:latest image --exit-code 1 --severity CRITICAL,HIGH --ignore-unfixed \
             app:${{ github.sha }}
 
+      - name: "Validar configuración"
+        if: github.event_name == 'push'
+        run: |
+          if [ -z "${{ vars.AWS_ROLE_ARN }}" ]; then
+            echo "::error::Falta la variable AWS_ROLE_ARN en Settings > Secrets and variables > Actions > Variables"
+            exit 1
+          fi
+
       - name: "AWS: credenciales temporales por OIDC"
         if: github.event_name == 'push'
         uses: aws-actions/configure-aws-credentials@v4
