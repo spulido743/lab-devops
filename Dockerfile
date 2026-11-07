@@ -1,6 +1,11 @@
 # Imagen base pequeña
 FROM python:3.12-slim
 
+# Parches de seguridad del sistema operativo (Trivy bloqueó zlib1g sin parchar)
+RUN apt-get update \
+ && apt-get upgrade -y --no-install-recommends \
+ && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Primero las dependencias (aprovecha la caché de capas)
