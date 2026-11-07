@@ -26,6 +26,17 @@ Resources:
       OwnershipControls:
         Rules:
           - ObjectOwnership: BucketOwnerEnforced
+      LifecycleConfiguration:
+        Rules:
+          - Id: borrar-versiones-viejas-del-state
+            Status: Enabled
+            Prefix: tfstate/
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+          - Id: borrar-backups-de-7-dias
+            Status: Enabled
+            Prefix: backups/
+            ExpirationInDays: 7
       Tags:
         - Key: proyecto
           Value: lab-devops
